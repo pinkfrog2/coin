@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KingsCoin • 2.22 every minute</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background: #0a0a0a; color: white; }
+    .gold { color: #facc15; text-shadow: 0 0 20px #facc15; }
+    .card { transition: all 0.3s; }
+    .card:hover { transform: scale(1.05); }
+    .mine-btn { animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+    .confetti { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; }
+  </style>
+</head>
+<body class="min-h-screen p-6">
+
+<div class="max-w-5xl mx-auto">
+
+  <!-- HEADER -->
+  <div class="flex justify-between items-center mb-8 border-b border-yellow-500 pb-4">
+    <div class="flex items-center gap-4">
+      <i class="fa-solid fa-crown text-6xl gold"></i>
+      <div>
+        <h1 class="text-6xl font-bold gold">KingsCoin</h1>
+        <p class="text-yellow-300 text-xl">2.22 KC every minute • 18 decimals</p>
+      </div>
+    </div>
+    <div class="text-right">
+      <p class="text-5xl font-bold text-yellow-400" id="balance">0.000000000000000000</p>
+      <p class="text-sm text-gray-400">KingsCoin</p>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="flex gap-4 mb-8 flex-wrap">
+    <button onclick="switchTab(0)" class="tab-btn active px-8 py-3 rounded-full bg-yellow-500 text-black font-bold">🏠 Dashboard</button>
+    <button onclick="switchTab(1)" class="tab-btn px-8 py-3 rounded-full hover:bg-yellow-500 hover:text-black">🎴 High / Low</button>
+    <button onclick="switchTab(2)" class="tab-btn px-8 py-3 rounded-full hover:bg-yellow-500 hover:text-black">⚡ Upgrades</button>
+    <button onclick="switchTab(3)" class="tab-btn px-8 py-3 rounded-full hover:bg-yellow-500 hover:text-black">📊 Stats</button>
+  </div>
+
+  <!-- TAB 0: DASHBOARD -->
+  <div id="tab-0" class="tab">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div class="bg-gray-900 rounded-3xl p-10 card">
+        <h2 class="text-3xl mb-6">Auto Mining</h2>
+        <p class="text-6xl font-bold text-yellow-400 mb-2" id="mine-rate">2.220000000000000000</p>
+        <p class="text-gray-400">KC per minute</p>
+        <button onclick="claimNow()" class="mine-btn mt-8 w-full bg-yellow-500 text-black py-6 rounded-2xl text-2xl font-bold">CLAIM NOW</button>
+        <p class="text-center text-xs mt-4 text-gray-500">Next auto claim in <span id="timer">60</span>s</p>
+      </div>
+
+      <div class="bg-gray-900 rounded-3xl p-10 card">
+        <h2 class="text-3xl mb-6">Daily Bonus</h2>
+        <button onclick="claimDaily()" id="daily-btn" class="w-full bg-green-600 hover:bg-green-500 py-8 rounded-2xl text-2xl font-bold">Claim 100 KC Daily Bonus</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 1: HIGH / LOW CARD GAME -->
+  <div id="tab-1" class="tab hidden">
+    <div class="bg-gray-900 rounded-3xl p-10 max-w-2xl mx-auto">
+      <h2 class="text-4xl gold text-center mb-8">🎴 High or Low</h2>
+      
+      <div class="flex justify-center gap-12 mb-10">
+        <div class="text-center">
+          <p class="text-sm text-gray-400">Current Card</p>
+          <div id="current-card" class="text-8xl mt-4">🃏</div>
+        </div>
+        <div class="text-center">
+          <p class="text-sm text-gray-400">Next Card</p>
+          <div id="next-card" class="text-8xl mt-4">❓</div>
+        </div>
+      </div>
+
+      <div class="flex gap-4 justify-center mb-8">
+        <button onclick="betHigh()" class="flex-1 bg-green-600 hover:bg-green-500 py-6 rounded-2xl text-2xl font-bold">HIGH ↑</button>
+        <button onclick="betLow()" class="flex-1 bg-red-600 hover:bg-red-500 py-6 rounded-2xl text-2xl font-bold">LOW ↓</button>
+      </div>
+
+      <div class="bg-gray-800 rounded-2xl p-6">
+        <p class="text-center mb-2">Bet Amount</p>
+        <input id="bet-amount" type="number" value="10" class="w-full text-center bg-gray-900 text-4xl py-4 rounded-xl">
+        <p class="text-center text-xs text-gray-400 mt-3">
+          Win chance: <span id="win-chance" class="text-yellow-400">48.08%</span> • House edge: 2.5%
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: UPGRADES -->
+  <div id="tab-2" class="tab hidden">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div onclick="buyUpgrade(1)" class="bg-gray-900 rounded-3xl p-8 card cursor-pointer">
+        <h3 class="text-2xl">Faster Mining</h3>
+        <p class="text-5xl font-bold text-yellow-400">+0.5 KC/min</p>
+        <p class="text-gray-400 mt-2">Cost: 500 KC</p>
+      </div>
+      <div onclick="buyUpgrade(2)" class="bg-gray-900 rounded-3xl p-8 card cursor-pointer">
+        <h3 class="text-2xl">Lucky Spin</h3>
+        <p class="text-5xl font-bold text-yellow-400">Spin for 10x–100x</p>
+        <p class="text-gray-400 mt-2">Cost: 200 KC</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: STATS -->
+  <div id="tab-3" class="tab hidden text-center">
+    <h2 class="text-4xl gold mb-8">Your Stats</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <div class="bg-gray-900 rounded-3xl p-8"><p class="text-5xl font-bold" id="total-mined">0.00</p><p class="text-gray-400">Total Mined</p></div>
+      <div class="bg-gray-900 rounded-3xl p-8"><p class="text-5xl font-bold" id="games-played">0</p><p class="text-gray-400">Games Played</p></div>
+      <div class="bg-gray-900 rounded-3xl p-8"><p class="text-5xl font-bold text-green-400" id="win-rate">0%</p><p class="text-gray-400">Win Rate</p></div>
+      <div class="bg-gray-900 rounded-3xl p-8"><p class="text-5xl font-bold" id="biggest-win">0.00</p><p class="text-gray-400">Biggest Win</p></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============== VARIABLES ==============
+let balance = 0;
+let mineRate = 2.22;
+let totalMined = 0;
+let gamesPlayed = 0;
+let wins = 0;
+let biggestWin = 0;
+let lastDaily = localStorage.getItem("lastDaily") || 0;
+let deck = [];
+let currentCardValue = 0;
+
+// ============== LOAD / SAVE ==============
+function load() {
+  const saved = localStorage.getItem("kingscoinData");
+  if (saved) {
+    const data = JSON.parse(saved);
+    balance = data.balance || 0;
+    mineRate = data.mineRate || 2.22;
+    totalMined = data.totalMined || 0;
+    gamesPlayed = data.gamesPlayed || 0;
+    wins = data.wins || 0;
+    biggestWin = data.biggestWin || 0;
+    lastDaily = data.lastDaily || 0;
+  }
+  updateBalance();
+}
+
+function save() {
+  localStorage.setItem("kingscoinData", JSON.stringify({
+    balance, mineRate, totalMined, gamesPlayed, wins, biggestWin, lastDaily
+  }));
+}
+
+// ============== BALANCE DISPLAY (18 decimals) ==============
+function updateBalance() {
+  document.getElementById("balance").textContent = balance.toFixed(18);
+  document.getElementById("total-mined").textContent = totalMined.toFixed(2);
+  document.getElementById("win-rate").textContent = gamesPlayed ? ((wins / gamesPlayed) * 100).toFixed(1) + "%" : "0%";
+  document.getElementById("biggest-win").textContent = biggestWin.toFixed(2);
+}
+
+// ============== AUTO MINE ==============
+let secondsLeft = 60;
+setInterval(() => {
+  secondsLeft--;
+  document.getElementById("timer").textContent = secondsLeft;
+  if (secondsLeft <= 0) {
+    balance += mineRate;
+    totalMined += mineRate;
+    updateBalance();
+    save();
+    secondsLeft = 60;
+  }
+}, 1000);
+
+function claimNow() {
+  balance += mineRate;
+  totalMined += mineRate;
+  updateBalance();
+  save();
+}
+
+// ============== DAILY BONUS ==============
+function claimDaily() {
+  const now = Date.now();
+  if (now - lastDaily > 86400000) {
+    balance += 100;
+    totalMined += 100;
+    lastDaily = now;
+    updateBalance();
+    save();
+    alert("🎉 Daily Bonus! +100 KC");
+  } else {
+    alert("Daily bonus already claimed today");
+  }
+}
+
+// ============== HIGH / LOW GAME ==============
+const suits = ['♥','♦','♣','♠'];
+const values = [2,3,4,5,6,7,8,9,10,11,12,13,14]; // 11=J,12=Q,13=K,14=A
+
+function newDeck() {
+  deck = [];
+  for (let s of suits) for (let v of values) deck.push({value: v, suit: s});
+  deck = deck.sort(() => Math.random() - 0.5);
+}
+
+function drawCard() {
+  if (deck.length < 2) newDeck();
+  return deck.pop();
+}
+
+function startGame() {
+  newDeck();
+  const card = drawCard();
+  currentCardValue = card.value;
+  document.getElementById("current-card").innerHTML = `${card.value > 10 ? ['J','Q','K','A'][card.value-11] : card.value}${card.suit}`;
+  document.getElementById("next-card").innerHTML = "❓";
+}
+
+function betHigh() {
+  playGame(true);
+}
+function betLow() {
+  playGame(false);
+}
+
+function playGame(isHigh) {
+  const bet = parseFloat(document.getElementById("bet-amount").value) || 10;
+  if (bet > balance || bet <= 0) return alert("Invalid bet!");
+
+  const next = drawCard();
+  document.getElementById("next-card").innerHTML = `${next.value > 10 ? ['J','Q','K','A'][next.value-11] : next.value}${next.suit}`;
+
+  const won = (isHigh && next.value > currentCardValue) || (!isHigh && next.value < currentCardValue);
+
+  gamesPlayed++;
+  if (won) {
+    const winnings = bet * 1.95;
+    balance += winnings;
+    wins++;
+    if (winnings > biggestWin) biggestWin = winnings;
+    triggerConfetti();
+    alert(`WIN! +${winnings.toFixed(2)} KC`);
+  } else {
+    balance -= bet;
+    alert("Lost this round");
+  }
+
+  updateBalance();
+  save();
+  startGame(); // new round
+}
+
+// ============== UPGRADES ==============
+function buyUpgrade(type) {
+  if (type === 1) {
+    if (balance >= 500) {
+      balance -= 500;
+      mineRate += 0.5;
+      alert("Pickaxe upgraded! +0.5 KC/min");
+    } else alert("Not enough KC");
+  }
+  if (type === 2) {
+    if (balance >= 200) {
+      balance -= 200;
+      const prize = [10, 20, 30, 50, 100][Math.floor(Math.random()*5)];
+      balance += prize * 10;
+      alert(`Lucky Spin! You won ${prize*10} KC!`);
+    } else alert("Not enough KC");
+  }
+  updateBalance();
+  save();
+}
+
+// ============== CONFETTI ==============
+function triggerConfetti() {
+  const c = document.createElement("canvas");
+  c.className = "confetti";
+  document.body.appendChild(c);
+  const ctx = c.getContext("2d");
+  c.width = window.innerWidth;
+  c.height = window.innerHeight;
+  let particles = [];
+  for (let i = 0; i < 200; i++) {
+    particles.push({x: Math.random()*c.width, y: Math.random()*c.height-100, vx: Math.random()*6-3, vy: Math.random()*8+4, color: ['#facc15','#eab308','#22c55e'][Math.floor(Math.random()*3)]});
+  }
+  let frame = setInterval(() => {
+    ctx.clearRect(0,0,c.width,c.height);
+    particles.forEach(p => {
+      p.y += p.vy;
+      p.x += p.vx;
+      ctx.fillStyle = p.color;
+      ctx.fillRect(p.x, p.y, 8, 8);
+    });
+    particles = particles.filter(p => p.y < c.height);
+    if (particles.length === 0) { clearInterval(frame); c.remove(); }
+  }, 16);
+}
+
+// ============== TABS ==============
+function switchTab(n) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.add('hidden'));
+  document.getElementById('tab-' + n).classList.remove('hidden');
+}
+
+// ============== START ==============
+load();
+startGame();
+switchTab(0);
+updateBalance();
+setInterval(save, 30000); // autosave every 30s
+</script>
+</body>
+</html>
